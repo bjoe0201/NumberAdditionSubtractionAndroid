@@ -38,27 +38,39 @@ Android app for number addition and subtraction, built with Kotlin and Jetpack C
 
 ## Fixed APK Release Process (Use This Every Time)
 
-Public GitHub releases must use the **debug-signed APK** for now.
+Public GitHub releases must use the **signed release APK** produced by `assembleRelease`.
 
-This project is **not currently configured like `MultiplicationZoo_ANDROID`**. In `MultiplicationZoo_ANDROID`, `assembleRelease` can produce a signed/installable `app-release.apk`. In this project, `app/build.gradle.kts` has no release `signingConfig`, so `assembleRelease` produces an unsigned release APK that must not be published.
+This project now supports release signing through a private, ignored `keystore.properties` file or `NUMBER_MATH_RELEASE_*` environment variables. Do not publish debug APKs, unsigned APKs, or APKs signed with the Android Debug certificate.
 
+- Use `app/build/outputs/apk/release/app-release.apk` for GitHub Releases.
+- Do not upload `app-debug.apk` for public releases.
 - Do not upload `app-release-unsigned.apk`.
-- `assembleRelease` output is unsigned in this project and is not installable.
-- Do not copy the `MultiplicationZoo_ANDROID` release APK upload command until this project has a real release keystore/signing workflow.
-- GitHub Release assets should be named `NumberAdditionSubtractionAndroid-vX.Y.Z-debug-signed.apk` while this temporary debug-signed publishing process is in use.
+- GitHub Release assets should be named `NumberAdditionSubtractionAndroid-vX.Y.Z-release.apk`.
+- Never commit or upload keystore files, `keystore.properties`, passwords, mapping files, or unsigned APKs.
 
-### Current Release Status Checked
+### Release signing setup
 
-Checked on 2026-05-05:
+Create a private release keystore outside Git, then copy `keystore.properties.example` to `keystore.properties` and fill in the real values. Both `keystore.properties` and `*.jks` are ignored by Git.
 
-- Repository: `https://github.com/bjoe0201/NumberAdditionSubtractionAndroid.git`
-- Existing release: `v1.0.0`
-- Release asset: `NumberAdditionSubtractionAndroid-v1.0.0-debug-signed.apk`
-- Asset SHA-256: `ee2e26c1e3ec1e200b520a47a30a44e07e5e10ffbb10e539096384ca3b567a6d`
-- Local `app/build/outputs/apk/debug/app-debug.apk` SHA-256 matched the GitHub Release asset.
-- APK signature verification passed with `apksigner`; signer certificate is Android Debug (`CN=Android Debug`).
+Required `keystore.properties` keys:
 
-Conclusion: the current `v1.0.0` GitHub Release APK is correct for the current temporary policy because it is the debug-signed APK, not `app-release-unsigned.apk`.
+```properties
+storeFile=release/number-addition-subtraction-upload-key.jks
+storePassword=private-store-password
+keyAlias=number-addition-subtraction
+keyPassword=private-key-password
+```
+
+Equivalent environment variables are also supported:
+
+```powershell
+$env:NUMBER_MATH_RELEASE_STORE_FILE = 'release/number-addition-subtraction-upload-key.jks'
+$env:NUMBER_MATH_RELEASE_STORE_PASSWORD = 'private-store-password'
+$env:NUMBER_MATH_RELEASE_KEY_ALIAS = 'number-addition-subtraction'
+$env:NUMBER_MATH_RELEASE_KEY_PASSWORD = 'private-key-password'
+```
+
+If signing inputs are missing, `assembleRelease` intentionally fails so an unsigned APK is not accidentally published.
 
 ### 0) Pre-release checks
 
@@ -79,30 +91,31 @@ Before publishing, confirm:
 - Release tag uses format `vX.Y.Z`.
 - `app/build.gradle.kts` `versionCode` is incremented and `versionName` matches the release tag without the `v` prefix.
 
-### 1) Build installable APK
+### 1) Build installable release APK
 
 ```bash
-./gradlew assembleDebug
+./gradlew assembleRelease
 ```
 
 Windows PowerShell:
 
 ```powershell
-.\gradlew.bat assembleDebug
+.\gradlew.bat assembleRelease
 ```
 
 Output file:
 
-- `app/build/outputs/apk/debug/app-debug.apk`
+- `app/build/outputs/apk/release/app-release.apk`
 
 Do **not** use this file for public release in this project:
 
 - `app/build/outputs/apk/release/app-release-unsigned.apk`
+- `app/build/outputs/apk/debug/app-debug.apk`
 
 Optional file and hash check:
 
 ```powershell
-$apk = ".\app\build\outputs\apk\debug\app-debug.apk"
+$apk = ".\app\build\outputs\apk\release\app-release.apk"
 Test-Path $apk
 Get-Item $apk
 Get-FileHash $apk -Algorithm SHA256
@@ -124,7 +137,7 @@ $apksigner = Get-ChildItem -Path (Join-Path $sdk 'build-tools') -Recurse -Filter
   Sort-Object FullName -Descending |
   Select-Object -First 1
 if (-not $apksigner) { throw 'apksigner.bat not found under Android SDK build-tools.' }
-& $apksigner.FullName verify --verbose --print-certs .\app\build\outputs\apk\debug\app-debug.apk
+& $apksigner.FullName verify --verbose --print-certs .\app\build\outputs\apk\release\app-release.apk
 ```
 
 Expected verification includes:
@@ -133,21 +146,24 @@ Expected verification includes:
 Verifies
 Verified using v2 scheme (APK Signature Scheme v2): true
 Number of signers: 1
-Signer #1 certificate DN: C=US, O=Android, CN=Android Debug
 ```
+
+The signer certificate must be the private release key, not `CN=Android Debug`.
 
 ### 2) Publish to GitHub Release
 
-Use tag format `vX.Y.Z` and upload debug APK as release asset.
+Use tag format `vX.Y.Z` and upload the signed release APK as release asset.
 
 ```powershell
-gh release upload vX.Y.Z ".\app\build\outputs\apk\debug\app-debug.apk#NumberAdditionSubtractionAndroid-vX.Y.Z-debug-signed.apk" --clobber
+Copy-Item ".\app\build\outputs\apk\release\app-release.apk" ".\app\build\outputs\apk\release\NumberAdditionSubtractionAndroid-vX.Y.Z-release.apk" -Force
+gh release upload vX.Y.Z ".\app\build\outputs\apk\release\NumberAdditionSubtractionAndroid-vX.Y.Z-release.apk" --clobber
 ```
 
 If wrong asset was uploaded before, delete it first:
 
 ```powershell
 gh release delete-asset vX.Y.Z app-release-unsigned.apk --yes
+gh release delete-asset vX.Y.Z app-debug.apk --yes
 ```
 
 If a wrongly named APK was uploaded, delete that exact asset name too:
@@ -165,28 +181,27 @@ gh release view vX.Y.Z --json tagName,name,url,publishedAt,assets
 gh release list --limit 100
 ```
 
-The release asset must contain exactly the debug-signed APK for that version, for example:
+The release asset must contain exactly the signed release APK for that version, for example:
 
 ```text
-NumberAdditionSubtractionAndroid-v1.0.0-debug-signed.apk
+NumberAdditionSubtractionAndroid-v1.0.2-release.apk
 ```
 
 Verify the uploaded asset hash if needed:
 
 ```powershell
-$localHash = (Get-FileHash ".\app\build\outputs\apk\debug\app-debug.apk" -Algorithm SHA256).Hash.ToLowerInvariant()
+$localHash = (Get-FileHash ".\app\build\outputs\apk\release\app-release.apk" -Algorithm SHA256).Hash.ToLowerInvariant()
 $release = gh release view vX.Y.Z --json assets | ConvertFrom-Json
-$asset = $release.assets | Where-Object { $_.name -eq "NumberAdditionSubtractionAndroid-vX.Y.Z-debug-signed.apk" }
+$asset = $release.assets | Where-Object { $_.name -eq "NumberAdditionSubtractionAndroid-vX.Y.Z-release.apk" }
 $remoteHash = $asset.digest -replace '^sha256:', ''
 [pscustomobject]@{ LocalHash = $localHash; RemoteHash = $remoteHash; Match = ($localHash -eq $remoteHash) }
 ```
 
 ### 4) Installation notes
 
-- A debug-signed APK is installable, but it is not a long-term public release signing strategy.
-- Devices that already installed the same package name with a different signing key may reject updates. Uninstall the old app first if installation fails due to signature mismatch.
+- Devices that already installed a debug-signed APK may reject the release-signed APK because the signing key changed. Uninstall the old app first if installation fails due to signature mismatch.
 - Android rejects downgrade installs when the new APK `versionCode` is less than or equal to the installed app's `versionCode`; increment `versionCode` for every release.
-- If this project later adds a private release keystore, switch the process to publish a signed `app-release.apk` and stop publishing debug APKs.
+- Keep the same private release keystore for all future public releases. Losing or changing it prevents normal updates over existing release-signed installs.
 - Never upload keystore files, `keystore.properties`, passwords, mapping files, or unsigned APKs to GitHub Releases.
 
 ## Architecture

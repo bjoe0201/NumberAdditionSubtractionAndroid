@@ -6,7 +6,7 @@
 給小朋友的可愛動物加減法遊戲，
 讓孩子用「看得到、點得到、聽得到」的方式學習數字。
 
-**版本：v1.0.1** ｜ **平台：Android 12+（API 31+）** ｜ **授權：MIT**
+**版本：v1.0.2** ｜ **平台：Android 12+（API 31+）** ｜ **授權：MIT**
 
 </div>
 
@@ -45,6 +45,12 @@
 - 可調整：題數、最大數量、語音模式、語言
 - 排行榜可用動物 emoji 存名字，孩子會很有參與感
 - 本機儲存（DataStore），不需要帳號
+
+### v1.0.2 更新重點
+
+- GitHub Releases 改為使用正式 `assembleRelease` 產出的 release APK。
+- Release APK 使用私密 release keystore 簽章，不再使用 Android Debug certificate。
+- 已安裝舊版 debug-signed APK 的裝置，第一次改裝 release-signed APK 時可能需要先解除安裝舊版。
 
 ### v1.0.1 更新重點
 
@@ -102,12 +108,14 @@
 ### 從原始碼建置
 
 ```bash
-./gradlew assembleDebug
+./gradlew assembleRelease
 ```
 
 APK 輸出位置：
 
-`app/build/outputs/apk/debug/app-debug.apk`
+`app/build/outputs/apk/release/app-release.apk`
+
+> Release build 需要本機私密 `keystore.properties` 或對應環境變數；金鑰與密碼不可提交到 GitHub。
 
 ---
 
