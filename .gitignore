@@ -1,0 +1,38 @@
+*.iml
+
+# Local machine / OS
+.DS_Store
+Thumbs.db
+
+# Gradle / Kotlin / Android build outputs
+.gradle/
+.kotlin/
+**/build/
+/build/
+/captures/
+.externalNativeBuild/
+.cxx/
+
+# Android Studio / IntelliJ
+.idea/
+
+# Local SDK and machine-specific settings
+local.properties
+/local.properties
+
+# Signing keys and secrets
+*.jks
+*.keystore
+keystore.properties
+.env
+.env.*
+
+# Distribution artifacts
+*.apk
+*.aab
+*.ap_
+*.dex
+*.class
+
+# Logs
+*.log
