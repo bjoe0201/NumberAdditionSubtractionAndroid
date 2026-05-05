@@ -36,6 +36,43 @@ Android app for number addition and subtraction, built with Kotlin and Jetpack C
 ./gradlew clean
 ```
 
+## Fixed APK Release Process (Use This Every Time)
+
+Public GitHub releases must use the **debug-signed APK** for now.
+
+- Do not upload `app-release-unsigned.apk`.
+- `assembleRelease` output is unsigned in this project and is not installable.
+
+### 1) Build installable APK
+
+```bash
+./gradlew assembleDebug
+```
+
+Windows PowerShell:
+
+```powershell
+.\gradlew.bat assembleDebug
+```
+
+Output file:
+
+- `app/build/outputs/apk/debug/app-debug.apk`
+
+### 2) Publish to GitHub Release
+
+Use tag format `vX.Y.Z` and upload debug APK as release asset.
+
+```powershell
+gh release upload vX.Y.Z "app/build/outputs/apk/debug/app-debug.apk#NumberAdditionSubtractionAndroid-vX.Y.Z-debug-signed.apk" --clobber
+```
+
+If wrong asset was uploaded before, delete it first:
+
+```powershell
+gh release delete-asset vX.Y.Z app-release-unsigned.apk --yes
+```
+
 ## Architecture
 
 - Single-module app (`app/`)
