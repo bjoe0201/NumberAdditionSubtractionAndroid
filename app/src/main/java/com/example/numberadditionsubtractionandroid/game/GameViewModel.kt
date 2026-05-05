@@ -36,6 +36,14 @@ class GameViewModel : ViewModel() {
         startNextRound()
     }
 
+    fun updateSpeechCallbacks(
+        speakRoundCount: (Int, Animal) -> Unit,
+        speakFeedback: (Boolean) -> Unit
+    ) {
+        onSpeakRoundCount = speakRoundCount
+        onSpeakFeedback = speakFeedback
+    }
+
     private fun startNextRound() {
         val state = _uiState.value
         if (state.currentRound >= state.totalRounds) {

@@ -29,8 +29,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -68,8 +68,8 @@ fun ResultScreen(
 ) {
     val lang = language
     val entries by repository.entries.collectAsState(initial = emptyList())
-    var selectedEmojis by remember { mutableStateOf(listOf<String>()) }
-    var scoreSaved by remember { mutableStateOf(false) }
+    var selectedEmojis by rememberSaveable { mutableStateOf(listOf<String>()) }
+    var scoreSaved by rememberSaveable { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
 
     Column(
