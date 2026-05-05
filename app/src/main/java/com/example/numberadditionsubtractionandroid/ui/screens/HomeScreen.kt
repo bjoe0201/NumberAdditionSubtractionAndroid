@@ -1,5 +1,7 @@
 package com.example.numberadditionsubtractionandroid.ui.screens
 
+import android.content.pm.PackageManager
+import android.os.Build
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -28,13 +30,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.numberadditionsubtractionandroid.data.ALL_ANIMALS
 import com.example.numberadditionsubtractionandroid.data.Animal
 import com.example.numberadditionsubtractionandroid.data.AppLanguage
 import com.example.numberadditionsubtractionandroid.data.AppStrings
-import com.example.numberadditionsubtractionandroid.data.APP_VERSION
 import com.example.numberadditionsubtractionandroid.data.GameMode
 import com.example.numberadditionsubtractionandroid.ui.components.FloatingAnimal
 import com.example.numberadditionsubtractionandroid.ui.theme.BackgroundColor
@@ -59,6 +61,19 @@ fun HomeScreen(
     onChangeLanguage: () -> Unit,
     onSpeakAnimal: (Animal, AppLanguage) -> Unit = { _, _ -> }
 ) {
+    val context = LocalContext.current
+    val appVersionName = remember(context) {
+        val packageInfo = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            context.packageManager.getPackageInfo(
+                context.packageName,
+                PackageManager.PackageInfoFlags.of(0)
+            )
+        } else {
+            @Suppress("DEPRECATION")
+            context.packageManager.getPackageInfo(context.packageName, 0)
+        }
+        packageInfo.versionName ?: "?"
+    }
     val startIdx = remember(language) { LANG_CYCLE.indexOf(language).coerceAtLeast(0) }
     var cycleOffset by remember(language) { mutableIntStateOf(0) }
     var reshuffleKey by remember { mutableIntStateOf(0) }
@@ -105,7 +120,7 @@ fun HomeScreen(
         }
 
         Text(
-            text = "v$APP_VERSION",
+            text = "v$appVersionName",
             fontSize = 12.sp,
             color = Color(0xFF888888),
             modifier = Modifier

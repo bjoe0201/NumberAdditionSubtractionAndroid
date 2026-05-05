@@ -1,5 +1,9 @@
 # 變更紀錄
 
+## v1.0.3 (2026-05-05)
+- 修正主畫面右下角版號仍顯示 `v1.0.0` 的問題
+- 主畫面版號改為讀取已安裝 APK 的 `versionName`，避免 UI 版號與 APK 版號不同步
+
 ## v1.0.2 (2026-05-05)
 - GitHub Releases 改為發佈 `assembleRelease` 產出的 signed release APK
 - 新增私密 release keystore 簽章設定，支援 `keystore.properties` 或環境變數
