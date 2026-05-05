@@ -1,8 +1,11 @@
 *.iml
+*.ipr
+*.iws
 
 # Local machine / OS
 .DS_Store
 Thumbs.db
+desktop.ini
 
 # Gradle / Kotlin / Android build outputs
 .gradle/
@@ -16,6 +19,14 @@ Thumbs.db
 # Android Studio / IntelliJ
 .idea/
 
+# Editor temp files
+*.swp
+*.swo
+*.tmp
+*.temp
+*.orig
+*.rej
+
 # Local SDK and machine-specific settings
 local.properties
 /local.properties
@@ -26,6 +37,13 @@ local.properties
 keystore.properties
 .env
 .env.*
+*.pem
+*.p12
+*.key
+secrets.*
+credentials.*
+google-services.json
+**/google-services.json
 
 # Distribution artifacts
 *.apk
@@ -33,6 +51,22 @@ keystore.properties
 *.ap_
 *.dex
 *.class
+*.jar
+*.war
+
+# Keep Gradle wrapper JAR committed
+!gradle/wrapper/gradle-wrapper.jar
+
+# Test / report outputs
+test-results/
+reports/
+coverage/
+
+# Backups / archives
+*.zip
+*.7z
+*.tar
+*.gz
 
 # Logs
 *.log

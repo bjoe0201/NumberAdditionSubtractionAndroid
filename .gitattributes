@@ -1,0 +1,22 @@
+* text=auto eol=lf
+
+# Scripts keep LF; Windows will handle via shell where needed
+*.sh text eol=lf
+*.kts text eol=lf
+*.kt text eol=lf
+*.xml text eol=lf
+*.md text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+
+# Binary assets
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.gif binary
+*.svg text eol=lf
+*.jar binary
+*.keystore binary
+*.jks binary
+
